@@ -151,6 +151,26 @@
   background: hsl(var(--surface));
 }
 
+/* During a JS-driven theme animation, suppress CSS transitions so the rAF
+   loop exclusively drives all color interpolation (including scrollbars). */
+html.theme-animating *,
+html.theme-animating *::before,
+html.theme-animating *::after {
+  transition-duration: 0s !important;
+}
+
+/* Radix scroll area thumb — colors come from CSS variables so they follow
+   the rAF animation automatically; retain a quick hover transition for
+   non-theme interactions. */
+.scroll-thumb {
+  background: hsl(var(--muted-foreground) / 0.25);
+  border-radius: 999px;
+  transition: background-color 100ms ease;
+}
+.scroll-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.4);
+}
+
 /* Firefox */
 * {
   scrollbar-width: thin;

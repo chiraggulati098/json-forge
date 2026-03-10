@@ -6,6 +6,146 @@ import JsonEditor from "@/components/JsonEditor";
 import JsonTreeView from "@/components/JsonTreeView";
 import { useJsonState } from "@/hooks/useJsonState";
 
+// ---------------------------------------------------------------------------
+// Theme-transition animation
+// CSS transitions don't apply to ::-webkit-scrollbar-* pseudo-elements because
+// they're painted on the compositor thread. Animating the CSS custom-property
+// values themselves via rAF is the only reliable way to keep scrollbars in
+// lockstep with the rest of the UI during a theme switch.
+// ---------------------------------------------------------------------------
+type Hsl = [number, number, number];
+
+function parseHsl(v: string): Hsl {
+  const p = v.trim().split(/\s+/);
+  return [parseFloat(p[0]), parseFloat(p[1]), parseFloat(p[2])];
+}
+
+function lerpHsl(a: Hsl, b: Hsl, t: number): string {
+  // Interpolate hue on the shortest angular distance to avoid passing
+  // through unrelated hues (prevents a green flash between themes).
+  const h0 = a[0];
+  const h1 = b[0];
+  const dh = ((h1 - h0 + 540) % 360) - 180; // shortest delta (-180..180]
+  const h = (h0 + dh * t + 360) % 360;
+  const s = a[1] + (b[1] - a[1]) * t;
+  const l = a[2] + (b[2] - a[2]) * t;
+  return `${h} ${s}% ${l}%`;
+}
+
+function easeInOut(t: number) {
+  return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+}
+
+const THEME_VARS = {
+  light: {
+    "--background":             "220 20% 97%",
+    "--foreground":             "222 47% 11%",
+    "--card":                   "0 0% 100%",
+    "--card-foreground":        "222 47% 11%",
+    "--popover":                "0 0% 100%",
+    "--popover-foreground":     "222 47% 11%",
+    "--primary":                "214 100% 40%",
+    "--primary-foreground":     "0 0% 100%",
+    "--secondary":              "220 14% 93%",
+    "--secondary-foreground":   "222 47% 11%",
+    "--muted":                  "220 14% 93%",
+    "--muted-foreground":       "220 10% 46%",
+    "--accent":                 "214 100% 50%",
+    "--accent-foreground":      "0 0% 100%",
+    "--destructive":            "0 72% 51%",
+    "--destructive-foreground": "0 0% 100%",
+    "--border":                 "220 13% 87%",
+    "--input":                  "220 13% 87%",
+    "--ring":                   "214 100% 50%",
+    "--surface":                "0 0% 100%",
+    "--gutter":                 "220 14% 90%",
+    "--syntax-key":             "214 60% 30%",
+    "--syntax-string":          "150 50% 35%",
+    "--syntax-number":          "30 80% 45%",
+    "--syntax-boolean":         "270 60% 45%",
+    "--syntax-null":            "0 50% 50%",
+    "--syntax-bracket":         "220 10% 55%",
+  },
+  dark: {
+    "--background":             "225 50% 5%",
+    "--foreground":             "210 40% 92%",
+    "--card":                   "224 40% 10%",
+    "--card-foreground":        "210 40% 92%",
+    "--popover":                "224 40% 10%",
+    "--popover-foreground":     "210 40% 92%",
+    "--primary":                "214 100% 61%",
+    "--primary-foreground":     "225 50% 5%",
+    "--secondary":              "224 30% 16%",
+    "--secondary-foreground":   "210 40% 92%",
+    "--muted":                  "224 30% 16%",
+    "--muted-foreground":       "220 15% 55%",
+    "--accent":                 "214 100% 61%",
+    "--accent-foreground":      "225 50% 5%",
+    "--destructive":            "0 70% 50%",
+    "--destructive-foreground": "0 0% 100%",
+    "--border":                 "224 25% 18%",
+    "--input":                  "224 25% 18%",
+    "--ring":                   "214 100% 61%",
+    "--surface":                "224 35% 12%",
+    "--gutter":                 "224 30% 8%",
+    "--syntax-key":             "205 70% 80%",
+    "--syntax-string":          "150 50% 65%",
+    "--syntax-number":          "30 80% 70%",
+    "--syntax-boolean":         "270 60% 75%",
+    "--syntax-null":            "0 50% 65%",
+    "--syntax-bracket":         "220 15% 45%",
+  },
+} as const;
+
+let _themeRafId: number | null = null;
+
+function animateThemeChange(toDark: boolean, duration = 100) {
+  if (_themeRafId !== null) { cancelAnimationFrame(_themeRafId); _themeRafId = null; }
+
+  const el = document.documentElement;
+  const targetVars = toDark ? THEME_VARS.dark : THEME_VARS.light;
+  const fallbackFrom = toDark ? THEME_VARS.light : THEME_VARS.dark;
+
+  // Sample current computed values as the animation "from" (handles mid-transition cancellation)
+  const computed = getComputedStyle(el);
+  const fromParsed: Record<string, Hsl> = {};
+  for (const key of Object.keys(targetVars) as (keyof typeof targetVars)[]) {
+    const live = computed.getPropertyValue(key).trim();
+    fromParsed[key] = parseHsl(live || fallbackFrom[key]);
+  }
+  const toParsed: Record<string, Hsl> = {};
+  for (const key of Object.keys(targetVars) as (keyof typeof targetVars)[]) {
+    toParsed[key] = parseHsl(targetVars[key]);
+  }
+
+  // Toggle the class now so the cascade is correct once inline overrides are removed
+  el.classList.toggle("dark", toDark);
+  // Let JS drive rendering; suppress CSS transitions to avoid fighting the rAF loop
+  el.classList.add("theme-animating");
+  // Pin variables at the sampled "from" values so the class change doesn't cause a jump
+  for (const key of Object.keys(fromParsed)) {
+    el.style.setProperty(key, `${fromParsed[key][0]} ${fromParsed[key][1]}% ${fromParsed[key][2]}%`);
+  }
+
+  const start = performance.now();
+  function frame(now: number) {
+    const raw = Math.min((now - start) / duration, 1);
+    const t = easeInOut(raw);
+    for (const key of Object.keys(toParsed)) {
+      el.style.setProperty(key, lerpHsl(fromParsed[key], toParsed[key], t));
+    }
+    if (raw < 1) {
+      _themeRafId = requestAnimationFrame(frame);
+    } else {
+      for (const key of Object.keys(toParsed)) el.style.removeProperty(key);
+      el.classList.remove("theme-animating");
+      _themeRafId = null;
+    }
+  }
+  _themeRafId = requestAnimationFrame(frame);
+}
+// ---------------------------------------------------------------------------
+
 type MaximizedPane = "none" | "editor" | "viewer";
 
 export default function Index() {
@@ -21,9 +161,16 @@ export default function Index() {
   const [splitPercent, setSplitPercent] = useState(50);
 
   // refs for scroll-sync removed
+  const isFirstRender = useRef(true);
 
   useEffect(() => {
-    document.documentElement.classList.toggle("dark", isDark);
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      // Apply initial theme instantly (no animation on first paint)
+      document.documentElement.classList.toggle("dark", isDark);
+      return;
+    }
+    animateThemeChange(isDark);
   }, [isDark]);
 
   const handleCopy = useCallback(() => {
