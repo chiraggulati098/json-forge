@@ -1,0 +1,151 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-sans: 'IBM Plex Sans', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+
+    --background: 220 20% 97%;
+    --foreground: 222 47% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    --primary: 214 100% 40%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 14% 93%;
+    --secondary-foreground: 222 47% 11%;
+
+    --muted: 220 14% 93%;
+    --muted-foreground: 220 10% 46%;
+
+    --accent: 214 100% 50%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 13% 87%;
+    --input: 220 13% 87%;
+    --ring: 214 100% 50%;
+
+    --radius: 0.5rem;
+
+    --surface: 0 0% 100%;
+    --gutter: 220 14% 90%;
+
+    --syntax-key: 214 60% 30%;
+    --syntax-string: 150 50% 35%;
+    --syntax-number: 30 80% 45%;
+    --syntax-boolean: 270 60% 45%;
+    --syntax-null: 0 50% 50%;
+    --syntax-bracket: 220 10% 55%;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 225 50% 5%;
+    --foreground: 210 40% 92%;
+
+    --card: 224 40% 10%;
+    --card-foreground: 210 40% 92%;
+
+    --popover: 224 40% 10%;
+    --popover-foreground: 210 40% 92%;
+
+    --primary: 214 100% 61%;
+    --primary-foreground: 225 50% 5%;
+
+    --secondary: 224 30% 16%;
+    --secondary-foreground: 210 40% 92%;
+
+    --muted: 224 30% 16%;
+    --muted-foreground: 220 15% 55%;
+
+    --accent: 214 100% 61%;
+    --accent-foreground: 225 50% 5%;
+
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 224 25% 18%;
+    --input: 224 25% 18%;
+    --ring: 214 100% 61%;
+
+    --surface: 224 35% 12%;
+    --gutter: 224 30% 8%;
+
+    --syntax-key: 205 70% 80%;
+    --syntax-string: 150 50% 65%;
+    --syntax-number: 30 80% 70%;
+    --syntax-boolean: 270 60% 75%;
+    --syntax-null: 0 50% 65%;
+    --syntax-bracket: 220 15% 45%;
+
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+}
+
+@layer utilities {
+  .font-mono {
+    font-family: var(--font-mono);
+  }
+  .font-sans {
+    font-family: var(--font-sans);
+  }
+}
+
+/* Themed scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: hsl(var(--surface));
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.25);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.4);
+}
+::-webkit-scrollbar-corner {
+  background: hsl(var(--surface));
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--muted-foreground) / 0.25) hsl(var(--surface));
+}
