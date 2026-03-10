@@ -3,8 +3,8 @@ import { useState, useCallback, useEffect } from "react";
 const SAMPLE_JSON = {
   name: "JSON Forge",
   version: "1.0.0",
-  description: "A precision data editor",
-  features: ["syntax highlighting", "tree view", "real-time validation", "two-way sync"],
+  description: "A precision JSON editor / viewer",
+  features: ["syntax highlighting", "tree view", "real-time validation"],
   config: {
     theme: "dark",
     autoFormat: true,
@@ -12,12 +12,13 @@ const SAMPLE_JSON = {
     maxDepth: null
   },
   stats: {
-    users: 12450,
-    rating: 4.9,
-    isPublic: true
+    launchedOn: "11-03-2026",
+    live: true,
+    isPublic: true,
+    vibeCoded: true,
   },
   tags: [
-    { id: 1, label: "developer-tool" },
+    { id: 1, label: "viewer" },
     { id: 2, label: "json" },
     { id: 3, label: "editor" }
   ]

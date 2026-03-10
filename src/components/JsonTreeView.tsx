@@ -1,40 +1,16 @@
-import { useState, useCallback, forwardRef, useImperativeHandle, useRef } from "react";
+import { useState, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface JsonTreeViewProps {
   data: unknown;
-  onScroll?: (scrollPercent: number) => void;
 }
 
-export interface JsonTreeViewHandle {
-  setScrollPercent: (percent: number) => void;
-}
+const JsonTreeView = ({ data }: JsonTreeViewProps) => {
+  const containerRef = useRef<HTMLDivElement>(null);
 
-const JsonTreeView = forwardRef<JsonTreeViewHandle, JsonTreeViewProps>(
-  ({ data, onScroll }, ref) => {
-    const containerRef = useRef<HTMLDivElement>(null);
-    const isSyncingRef = useRef(false);
-
-    useImperativeHandle(ref, () => ({
-      setScrollPercent(percent: number) {
-        if (containerRef.current) {
-          isSyncingRef.current = true;
-          const maxScroll = containerRef.current.scrollHeight - containerRef.current.clientHeight;
-          containerRef.current.scrollTop = maxScroll * percent;
-          requestAnimationFrame(() => {
-            isSyncingRef.current = false;
-          });
-        }
-      },
-    }));
-
-    const handleScroll = useCallback(() => {
-      if (!isSyncingRef.current && containerRef.current && onScroll) {
-        const maxScroll = containerRef.current.scrollHeight - containerRef.current.clientHeight;
-        const percent = maxScroll > 0 ? containerRef.current.scrollTop / maxScroll : 0;
-        onScroll(percent);
-      }
-    }, [onScroll]);
+  const handleScroll = useCallback(() => {
+    // scroll-sync removed; keep as placeholder
+  }, []);
 
     if (data === undefined) {
       return (
@@ -44,17 +20,12 @@ const JsonTreeView = forwardRef<JsonTreeViewHandle, JsonTreeViewProps>(
       );
     }
 
-    return (
-      <div
-        ref={containerRef}
-        onScroll={handleScroll}
-        className="h-full overflow-auto py-3 px-4 font-mono text-sm"
-      >
-        <JsonNode value={data} depth={0} isLast={true} />
-      </div>
-    );
-  }
-);
+  return (
+    <div ref={containerRef} className="h-full overflow-auto py-3 px-4 font-mono text-sm">
+      <JsonNode value={data} depth={0} isLast={true} />
+    </div>
+  );
+};
 
 JsonTreeView.displayName = "JsonTreeView";
 export default JsonTreeView;

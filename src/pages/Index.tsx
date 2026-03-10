@@ -2,8 +2,8 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Maximize2, Minimize2 } from "lucide-react";
 import Toolbar from "@/components/Toolbar";
-import JsonEditor, { JsonEditorHandle } from "@/components/JsonEditor";
-import JsonTreeView, { JsonTreeViewHandle } from "@/components/JsonTreeView";
+import JsonEditor from "@/components/JsonEditor";
+import JsonTreeView from "@/components/JsonTreeView";
 import { useJsonState } from "@/hooks/useJsonState";
 
 type MaximizedPane = "none" | "editor" | "viewer";
@@ -20,8 +20,7 @@ export default function Index() {
   const [gutterDragging, setGutterDragging] = useState(false);
   const [splitPercent, setSplitPercent] = useState(50);
 
-  const editorRef = useRef<JsonEditorHandle>(null);
-  const viewerRef = useRef<JsonTreeViewHandle>(null);
+  // refs for scroll-sync removed
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", isDark);
@@ -52,14 +51,7 @@ export default function Index() {
     };
   }, [gutterDragging]);
 
-  // Synchronized scrolling by percentage
-  const handleEditorScroll = useCallback((percent: number) => {
-    viewerRef.current?.setScrollPercent(percent);
-  }, []);
 
-  const handleViewerScroll = useCallback((percent: number) => {
-    editorRef.current?.setScrollPercent(percent);
-  }, []);
 
   const showEditor = maximized !== "viewer";
   const showViewer = maximized !== "editor";
@@ -104,11 +96,9 @@ export default function Index() {
               </div>
               <div className="flex-1 overflow-hidden">
                 <JsonEditor
-                  ref={editorRef}
                   value={rawJson}
                   onChange={updateRawJson}
                   error={error}
-                  onScroll={handleEditorScroll}
                 />
               </div>
             </motion.div>
@@ -155,11 +145,7 @@ export default function Index() {
                 </button>
               </div>
               <div className="flex-1 overflow-auto bg-surface">
-                <JsonTreeView
-                  ref={viewerRef}
-                  data={error ? undefined : parsedJson}
-                  onScroll={handleViewerScroll}
-                />
+                <JsonTreeView data={error ? undefined : parsedJson} />
               </div>
             </motion.div>
           )}
