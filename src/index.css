@@ -114,6 +114,13 @@
   body {
     @apply bg-background text-foreground font-sans antialiased;
   }
+
+  /* Ensure theme changes animate uniformly across elements */
+  *, *::before, *::after {
+    transition-property: background-color, color, border-color, box-shadow;
+    transition-duration: 150ms;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
 }
 
 @layer utilities {

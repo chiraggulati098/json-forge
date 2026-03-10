@@ -57,7 +57,7 @@ export default function Index() {
   const showViewer = maximized !== "editor";
 
   return (
-    <div className="flex flex-col h-screen bg-background overflow-hidden">
+    <div className="flex flex-col h-screen bg-background overflow-hidden transition-colors duration-150">
       <Toolbar
         onBeautify={beautify}
         onCopy={handleCopy}
@@ -83,7 +83,7 @@ export default function Index() {
               className="relative flex flex-col overflow-hidden"
             >
               <div
-                className="flex items-center justify-between px-4 h-8 bg-surface border-b border-border select-none"
+                className="flex items-center justify-between px-4 h-8 bg-surface border-b border-border select-none transition-colors duration-150"
                 onDoubleClick={() => setMaximized((m) => (m === "editor" ? "none" : "editor"))}
               >
                 <span className="text-xs font-sans font-medium text-muted-foreground uppercase tracking-wider">Editor</span>
@@ -133,7 +133,7 @@ export default function Index() {
               className="relative flex flex-col overflow-hidden"
             >
               <div
-                className="flex items-center justify-between px-4 h-8 bg-surface border-b border-border select-none"
+                className="flex items-center justify-between px-4 h-8 bg-surface border-b border-border select-none transition-colors duration-150"
                 onDoubleClick={() => setMaximized((m) => (m === "viewer" ? "none" : "viewer"))}
               >
                 <span className="text-xs font-sans font-medium text-muted-foreground uppercase tracking-wider">Viewer</span>
@@ -152,7 +152,7 @@ export default function Index() {
         </AnimatePresence>
       </div>
 
-      <div className="flex items-center justify-between px-4 py-1.5 bg-surface border-t border-border text-[11px] font-sans text-muted-foreground">
+      <div className="flex items-center justify-between px-4 py-1.5 bg-surface border-t border-border text-[11px] font-sans text-muted-foreground transition-colors duration-150">
         <span>JSON Forge</span>
         <span>{error ? "⚠ Invalid JSON" : "✓ Valid JSON"}</span>
       </div>

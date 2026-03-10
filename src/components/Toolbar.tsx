@@ -40,7 +40,7 @@ export default function Toolbar({ onBeautify, onCopy, onClear, isDark, onToggleT
   }, [onCopy]);
 
   return (
-    <div className="flex items-center justify-between px-4 py-2 bg-surface border-b border-border">
+    <div className="flex items-center justify-between px-4 py-2 bg-surface border-b border-border transition-colors duration-150">
       <div className="flex items-center gap-1.5">
         <div className="flex items-center gap-2 mr-4">
           <div className="w-2.5 h-2.5 rounded-full bg-primary" />
