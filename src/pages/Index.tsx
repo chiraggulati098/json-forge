@@ -159,6 +159,17 @@ export default function Index() {
   const [maximized, setMaximized] = useState<MaximizedPane>("none");
   const [gutterDragging, setGutterDragging] = useState(false);
   const [splitPercent, setSplitPercent] = useState(50);
+  const [searchOpen, setSearchOpen] = useState({ editor: false, viewer: false });
+  const setSearch = useCallback(
+    (pane: "editor" | "viewer", open: boolean) => setSearchOpen((s) => ({ ...s, [pane]: open })),
+    []
+  );
+  const handlePaneKeyDown = (pane: "editor" | "viewer") => (e: React.KeyboardEvent) => {
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "f") {
+      e.preventDefault();
+      setSearch(pane, true);
+    }
+  };
 
   // refs for scroll-sync removed
   const isFirstRender = useRef(true);
@@ -219,6 +230,8 @@ export default function Index() {
           {showEditor && (
             <motion.div
               key="editor-pane"
+              tabIndex={-1}
+              onKeyDown={handlePaneKeyDown("editor")}
               layout
               initial={{ width: 0, opacity: 0 }}
               animate={{
@@ -246,6 +259,8 @@ export default function Index() {
                   value={rawJson}
                   onChange={updateRawJson}
                   error={error}
+                  searchOpen={searchOpen.editor}
+                  onSearchClose={() => setSearch("editor", false)}
                 />
               </div>
             </motion.div>
@@ -269,6 +284,8 @@ export default function Index() {
           {showViewer && (
             <motion.div
               key="viewer-pane"
+              tabIndex={-1}
+              onKeyDown={handlePaneKeyDown("viewer")}
               layout
               initial={{ width: 0, opacity: 0 }}
               animate={{
@@ -292,7 +309,11 @@ export default function Index() {
                 </button>
               </div>
               <div className="flex-1 overflow-auto bg-surface">
-                <JsonTreeView data={error ? undefined : parsedJson} />
+                <JsonTreeView
+                  data={error ? undefined : parsedJson}
+                  searchOpen={searchOpen.viewer}
+                  onSearchClose={() => setSearch("viewer", false)}
+                />
               </div>
             </motion.div>
           )}
